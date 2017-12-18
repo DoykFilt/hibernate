@@ -73,7 +73,7 @@ public class ControlerInsertion {
 		return personnes;
 	}
 	public List<Adresse> getAdresses(){
-		String queryString = "SELECT id, pays, ville, rue, numero, code_postal From Adresse;";
+		String queryString = "SELECT id, pays, ville, rue, numero, code_postal From Adresse";
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -88,7 +88,7 @@ public class ControlerInsertion {
 		return adresses;
 	}
 	public Adresse getAdresse(int id){
-		String queryString = "SELECT id, pays, ville, rue, numero, code_postal From Adresse WHERE id = " + id + ";";
+		String queryString = "SELECT id, pays, ville, rue, numero, code_postal From Adresse WHERE id = " + id;
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -100,7 +100,7 @@ public class ControlerInsertion {
 		return adresse;
 	}
 	public Personne getPersonne(String secu){
-		String queryString = "SELECT numero_securite_social, numero_telephone, adresse_id From Person WHERE numero_securite_social = " + secu + ";";
+		String queryString = "SELECT numero_securite_social, numero_telephone, adresse_id From Person WHERE numero_securite_social = " + secu;
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -110,7 +110,7 @@ public class ControlerInsertion {
 		return personne;
 	}
 	public Tarif getTarif(int code){
-		String queryString = "SELECT code, heure_debut, heure_fin, prix_kwh, reduction From Tarif WHERE code = " + code + ";";
+		String queryString = "SELECT code, heure_debut, heure_fin, prix_kwh, reduction From Tarif WHERE code = " + code;
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -121,7 +121,7 @@ public class ControlerInsertion {
 		return tarif;
 	}
 	public List<Tarif> getTarifs(){
-		String queryString = "SELECT code, heure_debut, heure_fin, prix_kwh, reduction From Tarif;";
+		String queryString = "SELECT code, heure_debut, heure_fin, prix_kwh, reduction From Tarif";
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -136,7 +136,7 @@ public class ControlerInsertion {
 		return tarifs;
 	}
 	public List<PlageHoraire> getPlagesHoraires(){
-		String queryString = "SELECT id, heure_debut, heure_fin, puissance_consommee, date From PlageHoraire;";
+		String queryString = "SELECT id, heure_debut, heure_fin, puissance_consommee, date From PlageHoraire";
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -150,7 +150,7 @@ public class ControlerInsertion {
 		return plages;
 	}
 	public PlageHoraire getPlageHoraire(int id){
-		String queryString = "SELECT id, heure_debut, heure_fin, puissance_consommee, date From PlageHoraire WHERE ID = " + id +";";
+		String queryString = "SELECT id, heure_debut, heure_fin, puissance_consommee, date From PlageHoraire WHERE ID = " + id;
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -161,7 +161,7 @@ public class ControlerInsertion {
 		return plage;
 	}
 	public List<Compteur> getCompteurs(){
-		String queryString = "SELECT numero, date_activation, adresse_id, personne_numero_securite_social From Compteur;";
+		String queryString = "SELECT numero, date_activation, adresse_id, personne_numero_securite_social From Compteur";
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -175,7 +175,7 @@ public class ControlerInsertion {
 		return compteurs;
 	}
 	public Compteur getCompteur(int numero){
-		String queryString = "SELECT numero, date_activation, adresse_id, personne_numero_securite_social From Compteur WHERE numero = " + numero +";";
+		String queryString = "SELECT numero, date_activation, adresse_id, personne_numero_securite_social From Compteur WHERE numero = " + numero;
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -202,7 +202,7 @@ public class ControlerInsertion {
 	}
 	
 	public int countPlages(int tarifCode){
-		String queryString = "SELECT * From inclus WHERE Tarif_Code = " + tarifCode + " GROUP BY Plage_Id;";
+		String queryString = "SELECT * From inclus WHERE Tarif_Code = " + tarifCode + " GROUP BY Plage_Id";
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -210,13 +210,16 @@ public class ControlerInsertion {
 	}
 	
 	public float calculerCoutTotal(Date date, int numeroCompteur){
+		
+		float cout = 0.0f;
+		
 		//Selection du compteur
 		Compteur compteur = getCompteur(numeroCompteur);
 		if(compteur.getDate_activation().before(date))
 			return 0.0f;
 		
 		//Selection des plages horaires concernées
-		String queryString = "SELECT id, heure_debut, heure_fin, puissance_consommee, date From PlageHoraire WHERE date LIKE " + new SimpleDateFormat("yyyy-MM-dd").format(date) + ";";
+		String queryString = "SELECT id, heure_debut, heure_fin, puissance_consommee, date From PlageHoraire WHERE date LIKE " + new SimpleDateFormat("yyyy-MM-dd").format(date);
 		Query query = em.createQuery(queryString);
 		List results = query.getResultList();
 		
@@ -229,9 +232,8 @@ public class ControlerInsertion {
 		}
 
 		//Selection des tarifs associés
-		List<Tarif> tarifs = new ArrayList<>();
 		for(int j=0; j < plages.size(); j++){
-			queryString = "SELECT code, heure_debut, heure_fin, prix_kwh, reduction From Tarif WHERE code IN (SELECT tarif_code FROM inclus WHERE plage_id = " + plages.get(j).getId() + ");";
+			queryString = "SELECT code, heure_debut, heure_fin, prix_kwh, reduction From Tarif WHERE code IN (SELECT tarif_code FROM inclus WHERE plage_id = " + plages.get(j).getId() + ")";
 			query = em.createQuery(queryString);
 			results = query.getResultList();
 			
@@ -240,9 +242,26 @@ public class ControlerInsertion {
 				Tarif tarif = new Tarif((java.time.LocalTime)actualResult[1], (java.time.LocalTime)actualResult[2], (float)actualResult[3],
 						(float)actualResult[5]);
 				tarif.setCode((int)actualResult[0]);
-				if(!tarifs.contains(tarif))
-					tarifs.add(tarif);
+
+				//Calcul de la différence de temps
+				java.time.LocalTime timeDebut;
+				java.time.LocalTime timeFin;
+				if(tarif.getHeure_debut().isAfter(plages.get(j).getHeure_debut()))
+					timeDebut = tarif.getHeure_debut();
+				else
+					timeDebut = plages.get(j).getHeure_debut();
+				if(tarif.getHeure_fin().isBefore(plages.get(j).getHeure_fin()))
+					timeFin = tarif.getHeure_fin();
+				else
+					timeFin = plages.get(j).getHeure_fin();
+				
+				float diffTemps = (timeFin.getHour() + timeFin.getMinute() / 60) - (timeDebut.getHour() + timeDebut.getMinute() / 60);
+				
+				//Calcul du cout de ce tarif
+				cout += diffTemps * tarif.getPrix_kwh() - diffTemps * tarif.getReduction();
 			}
 		}
+		
+		return cout;
 	}
 }
